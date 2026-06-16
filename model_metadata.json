@@ -1,0 +1,22 @@
+{
+    "model_type": "RandomForestClassifier",
+    "n_estimators": 100,
+    "features": [
+        "type",
+        "amount",
+        "oldbalanceOrg",
+        "newbalanceOrig",
+        "oldbalanceDest",
+        "newbalanceDest",
+        "balance_change",
+        "zero_balance_after"
+    ],
+    "training_date": "2026-05-23T00:07:21.715218",
+    "test_accuracy": 0.997329716374701,
+    "roc_auc_score": 0.999509875801633,
+    "training_samples": 10167052,
+    "test_samples": 1272524,
+    "class_imbalance_handling": "SMOTE (Synthetic Minority Over-sampling)",
+    "fraud_detection_rate": 0.9908703590992087,
+    "false_positive_rate": 0.002661932942580769
+}

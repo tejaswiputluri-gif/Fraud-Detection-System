@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Fraud Detection System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .fraud {
+            background-color: #ffdddd;
+            border-left: 5px solid #e74c3c;
+        }
+        .legit {
+            background-color: #ddffdd;
+            border-left: 5px solid #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <h1>Online Fraud Detection System</h1>
+    
+    <div class="form-container">
+        <div class="form-group">
+            <label for="transactionType">Transaction Type:</label>
+            <select id="transactionType">
+                <option value="1">CASH_OUT</option>
+                <option value="2">PAYMENT</option>
+                <option value="3">CASH_IN</option>
+                <option value="4">TRANSFER</option>
+                <option value="5">DEBIT</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" step="0.01" placeholder="Enter transaction amount">
+        </div>
+        
+        <div class="form-group">
+            <label for="oldBalanceOrig">Sender Old Balance:</label>
+            <input type="number" id="oldBalanceOrig" step="0.01" placeholder="Sender's balance before transaction">
+        </div>
+        
+        <div class="form-group">
+            <label for="newBalanceOrig">Sender New Balance:</label>
+            <input type="number" id="newBalanceOrig" step="0.01" placeholder="Sender's balance after transaction">
+        </div>
+        
+        <div class="form-group">
+            <label for="oldBalanceDest">Recipient Old Balance:</label>
+            <input type="number" id="oldBalanceDest" step="0.01" placeholder="Recipient's balance before transaction">
+        </div>
+        
+        <div class="form-group">
+            <label for="newBalanceDest">Recipient New Balance:</label>
+            <input type="number" id="newBalanceDest" step="0.01" placeholder="Recipient's balance after transaction">
+        </div>
+        
+        <button onclick="checkFraud()">Check for Fraud</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function checkFraud() {
+            // Get input values
+            const type = document.getElementById('transactionType').value;
+            const amount = document.getElementById('amount').value;
+            const oldBalanceOrig = document.getElementById('oldBalanceOrig').value;
+            const newBalanceOrig = document.getElementById('newBalanceOrig').value;
+            const oldBalanceDest = document.getElementById('oldBalanceDest').value;
+            const newBalanceDest = document.getElementById('newBalanceDest').value;
+            
+            // In a real application, you would send this data to your backend
+            // where the Python model would process it. For this demo, we'll simulate
+            // a response with random results.
+            
+            // Simulate API call (replace with actual fetch to your backend)
+            setTimeout(() => {
+                // Random result for demo purposes
+                const isFraud = Math.random() > 0.7; // 30% chance of fraud for demo
+                const probability = isFraud ? (Math.random() * 50 + 50).toFixed(2) : (Math.random() * 30).toFixed(2);
+                
+                // Display result
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                
+                if (isFraud) {
+                    resultDiv.className = 'fraud';
+                    resultDiv.innerHTML = `
+                        <h3>⚠️ Fraud Detected!</h3>
+                        <p>This transaction has a <strong>${probability}%</strong> probability of being fraudulent.</p>
+                        <p>Recommendation: Flag this transaction for manual review.</p>
+                    `;
+                } else {
+                    resultDiv.className = 'legit';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Legitimate Transaction</h3>
+                        <p>This transaction has a <strong>${probability}%</strong> probability of being legitimate.</p>
+                        <p>Recommendation: No action needed.</p>
+                    `;
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>

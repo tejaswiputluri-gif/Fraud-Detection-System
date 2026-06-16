@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Fraud Detection System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .fraud {
+            background-color: #ffdddd;
+            border-left: 5px solid #e74c3c;
+        }
+        .legit {
+            background-color: #ddffdd;
+            border-left: 5px solid #2ecc71;
+        }
+        .error {
+            background-color: #ffe5e5;
+            border-left: 5px solid #c0392b;
+        }
+        #loading {
+            text-align: center;
+            display: none;
+            margin-top: 10px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>🚨 Online Fraud Detection System</h1>
+    
+    <div class="form-container">
+        <p style="color: #7f8c8d; text-align: center;">Enter transaction details to check for potential fraud</p>
+        
+        <div class="form-group">
+            <label for="transactionType">Transaction Type:</label>
+            <select id="transactionType">
+                <option value="1">CASH_OUT</option>
+                <option value="2">PAYMENT</option>
+                <option value="3">CASH_IN</option>
+                <option value="4">TRANSFER</option>
+                <option value="5">DEBIT</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="amount">Amount ($):</label>
+            <input type="number" id="amount" step="0.01" placeholder="Enter transaction amount" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="oldBalanceOrig">Sender Old Balance ($):</label>
+            <input type="number" id="oldBalanceOrig" step="0.01" placeholder="Sender's balance before transaction" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="newBalanceOrig">Sender New Balance ($):</label>
+            <input type="number" id="newBalanceOrig" step="0.01" placeholder="Sender's balance after transaction" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="oldBalanceDest">Recipient Old Balance ($):</label>
+            <input type="number" id="oldBalanceDest" step="0.01" placeholder="Recipient's balance before transaction" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="newBalanceDest">Recipient New Balance ($):</label>
+            <input type="number" id="newBalanceDest" step="0.01" placeholder="Recipient's balance after transaction" required>
+        </div>
+        
+        <button onclick="checkFraud()" id="checkButton">Check for Fraud</button>
+        
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing transaction...</p>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function checkFraud() {
+            // Get input values
+            const amountStr = document.getElementById('amount').value.trim();
+            const oldBalanceOrigStr = document.getElementById('oldBalanceOrig').value.trim();
+            const newBalanceOrigStr = document.getElementById('newBalanceOrig').value.trim();
+            const oldBalanceDestStr = document.getElementById('oldBalanceDest').value.trim();
+            const newBalanceDestStr = document.getElementById('newBalanceDest').value.trim();
+            
+            // Check if any field is empty
+            if (!amountStr || !oldBalanceOrigStr || !newBalanceOrigStr || !oldBalanceDestStr || !newBalanceDestStr) {
+                showError("❌ Please fill in ALL fields before checking");
+                return;
+            }
+            
+            // Parse values
+            const type = parseFloat(document.getElementById('transactionType').value);
+            const amount = parseFloat(amountStr);
+            const oldBalanceOrig = parseFloat(oldBalanceOrigStr);
+            const newBalanceOrig = parseFloat(newBalanceOrigStr);
+            const oldBalanceDest = parseFloat(oldBalanceDestStr);
+            const newBalanceDest = parseFloat(newBalanceDestStr);
+            
+            // Validation
+            if (isNaN(amount) || isNaN(oldBalanceOrig) || isNaN(newBalanceOrig) || isNaN(oldBalanceDest) || isNaN(newBalanceDest)) {
+                showError("❌ Please enter valid numbers in all fields");
+                return;
+            }
+            
+            if (amount <= 0 || oldBalanceOrig < 0 || newBalanceOrig < 0 || oldBalanceDest < 0 || newBalanceDest < 0) {
+                showError("❌ Amounts must be non-negative and amount > 0");
+                return;
+            }
+            
+            // Show loading spinner
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('checkButton').disabled = true;
+            document.getElementById('result').style.display = 'none';
+            
+            // Prepare payload
+            const payload = {
+                type: type,
+                amount: amount,
+                oldbalanceOrg: oldBalanceOrig,
+                newbalanceOrig: newBalanceOrig,
+                oldbalanceDest: oldBalanceDest,
+                newbalanceDest: newBalanceDest
+            };
+            
+            // Call Flask API
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('checkButton').disabled = false;
+                
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    showResult(data);
+                }
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('checkButton').disabled = false;
+                showError("Error connecting to server: " + error.message);
+            });
+        }
+        
+        function showResult(data) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            
+            const isFraud = data.prediction.toLowerCase().includes('fraud');
+            
+            if (isFraud) {
+                resultDiv.className = 'fraud';
+                resultDiv.innerHTML = `
+                    <h3>🚨 FRAUD ALERT</h3>
+                    <p><strong>Status:</strong> ⚠️ POTENTIAL FRAUD DETECTED</p>
+                    <p><strong>Fraud Risk:</strong> ${data.fraud_probability}</p>
+                    <p><strong>Confidence:</strong> ${data.confidence}</p>
+                    <p style="color: #c0392b; font-weight: bold;">ACTION: ❌ BLOCK & REVIEW</p>
+                `;
+            } else {
+                resultDiv.className = 'legit';
+                resultDiv.innerHTML = `
+                    <h3>✅ SAFE TRANSACTION</h3>
+                    <p><strong>Status:</strong> ✅ APPEARS LEGITIMATE</p>
+                    <p><strong>Fraud Risk:</strong> ${data.fraud_probability}</p>
+                    <p><strong>Confidence:</strong> ${data.confidence}</p>
+                    <p style="color: #27ae60; font-weight: bold;">ACTION: ✅ ALLOW</p>
+                `;
+            }
+        }
+        
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'error';
+            resultDiv.innerHTML = `
+                <h3>❌ Input Error</h3>
+                <p>${message}</p>
+                <p style="font-size: 12px; color: #666;">Make sure all 6 fields are filled with valid numbers</p>
+            `;
+        }
+        
+        // Allow Enter key to submit
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                checkFraud();
+            }
+        });
+    </script>
+</body>
+</html>
